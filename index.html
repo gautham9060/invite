@@ -253,6 +253,7 @@
             iv: iv,
           });
           const decryptedText = decrypted.toString(CryptoJS.enc.Utf8);
+          console.log(decryptedText, "decryptedTextdecryptedText");
           return JSON.parse(decryptedText);
         } catch (err) {
           console.error("Decryption failed:", err);
