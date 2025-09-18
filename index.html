@@ -242,7 +242,8 @@
         window.currentTranslation = translation;
       }
 
-      const CRYPTO_KEY = "H98zM6i/55yNJfkFsbu0HrzlFo17FtR9"; // can be read from somewhere if needed
+      // const CRYPTO_KEY = "H98zM6i/55yNJfkFsbu0HrzlFo17FtR9"; // can be read from somewhere if needed
+      CRYPTO_KEY = "ceYzUixU9HZYT6LHfVrgshCqRgUJcaJQ";
       const key = CryptoJS.enc.Utf8.parse(CRYPTO_KEY);
       const iv = CryptoJS.enc.Utf8.parse(CRYPTO_KEY.slice(0, 16));
 
@@ -382,105 +383,59 @@
           navigator.userAgent || navigator.vendor || window.opera;
         const isAndroid = /android/i.test(userAgent);
         const isIOS = /iPad|iPhone|iPod/.test(userAgent) && !window.MSStream;
-        const isSafari = /^((?!chrome|android).)*safari/i.test(userAgent);
 
         const params = new URLSearchParams(window.location.search);
-
         let code = params.get("code");
         let zoneId = params.get("zoneId");
         const zonedata = params.get("zonedata");
 
         let decryptedData;
-        if (zonedata) {
-          decryptedData = decryptCode(decodeURIComponent(zonedata));
-        }
-
-        // If zonedata is present, decrypt it to get zoneId (unless direct zoneId is provided)
-        if (decryptedData?.zoneId && !zoneId) {
-          zoneId = decryptedData.zoneId;
-        }
-
-        if (decryptedData?.code && !code) {
-          code = decryptedData.code;
-        }
+        if (zonedata) decryptedData = decryptCode(decodeURIComponent(zonedata));
+        if (decryptedData?.zoneId && !zoneId) zoneId = decryptedData.zoneId;
+        if (decryptedData?.code && !code) code = decryptedData.code;
 
         let appUrl = "mymmo://invite";
         const queryParams = [];
-
         if (code) queryParams.push(`code=${code}`);
         if (zoneId) queryParams.push(`zoneId=${zoneId}`);
-
-        if (queryParams.length > 0) {
-          appUrl += `?${queryParams.join("&")}`;
-        }
+        if (queryParams.length) appUrl += `?${queryParams.join("&")}`;
 
         const storeUrl = isAndroid
           ? "https://play.google.com/store/apps/details?id=com.mymmo.android"
           : "https://apps.apple.com/us/app/mymmo-verbind-met-je-buren/id6739211819";
 
-        // Redirect to store if both zoneId and code are not present
+        // If no code or zoneId, go directly to store
         if (!zoneId && !code) {
           window.location.href = storeUrl;
           return;
         }
 
-        // Safari-specific handling - use window.open with immediate close
-        if (isSafari) {
-          let appOpened = false;
+        // iOS handling
+        if (isIOS) {
+          const now = Date.now();
+          // Redirect to app first
+          window.location.href = appUrl;
 
-          // Listen for focus events to detect if app opened
-          const focusHandler = () => {
-            appOpened = true;
-          };
-
-          window.addEventListener("focus", focusHandler);
-
-          // Try to open app in a new window that closes immediately
-          try {
-            const appWindow = window.open(appUrl, "_blank");
-
-            // Close the window immediately to prevent error display
-            if (appWindow) {
-              setTimeout(() => {
-                appWindow.close();
-              }, 50);
-            }
-          } catch (e) {
-            // If window.open fails, silently continue to store redirect
-          }
-
-          // Check if app opened after reasonable time
+          // After 1.5 seconds, redirect to App Store if app not installed
           setTimeout(() => {
-            window.removeEventListener("focus", focusHandler);
-
-            // If app didn't open, redirect to store
-            if (!appOpened) {
+            if (Date.now() - now < 2000) {
               window.location.href = storeUrl;
             }
           }, 1500);
-
           return;
         }
 
-        // Non-Safari browsers - use the original blur method
+        // Android / other
         let didBlur = false;
-
-        // Listen for blur (i.e., browser losing focus)
         const blurListener = () => {
           didBlur = true;
         };
-
         window.addEventListener("blur", blurListener);
-
-        // Try to open the app
         window.location.href = appUrl;
 
         setTimeout(() => {
           window.removeEventListener("blur", blurListener);
-          // Only redirect if user did NOT leave the browser
-          if (!didBlur) {
-            window.location.href = storeUrl;
-          }
+          if (!didBlur) window.location.href = storeUrl;
         }, 2000);
       }
     </script>
