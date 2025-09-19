@@ -242,8 +242,7 @@
         window.currentTranslation = translation;
       }
 
-      // const CRYPTO_KEY = "H98zM6i/55yNJfkFsbu0HrzlFo17FtR9"; // can be read from somewhere if needed
-      CRYPTO_KEY = "ceYzUixU9HZYT6LHfVrgshCqRgUJcaJQ";
+      const CRYPTO_KEY = "H98zM6i/55yNJfkFsbu0HrzlFo17FtR9"; // can be read from somewhere if needed
       const key = CryptoJS.enc.Utf8.parse(CRYPTO_KEY);
       const iv = CryptoJS.enc.Utf8.parse(CRYPTO_KEY.slice(0, 16));
 
@@ -416,12 +415,12 @@
           // Redirect to app first
           window.location.href = appUrl;
 
-          // After 1.5 seconds, redirect to App Store if app not installed
+          // After 1.2 seconds, redirect to App Store if app not installed
           setTimeout(() => {
             if (Date.now() - now < 2000) {
               window.location.href = storeUrl;
             }
-          }, 1500);
+          }, 1200);
           return;
         }
 
@@ -438,7 +437,9 @@
           if (!didBlur) window.location.href = storeUrl;
         }, 2000);
       }
-    </script>
+   
+   
+   </script>
   </head>
   <body>
     <div class="main_container">
